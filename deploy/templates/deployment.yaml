@@ -1,0 +1,146 @@
+{{- $release_name := .Release.Name }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "laravel.fullname" . }}
+  labels:
+    {{- include "laravel.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "laravel.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "laravel.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: public-volume
+          persistentVolumeClaim:
+            claimName: {{ $release_name }}-public
+        - name: redis-volume
+          persistentVolumeClaim:
+            claimName: {{ $release_name }}-redis
+        - name: nginx-config-volume
+          configMap:
+            name: {{ $release_name }}-nginx-config
+            items:
+              - key: config
+                path: app.conf
+        {{- if .Values.storage.enabled }}
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: {{ $release_name }}-storage
+        {{- end }}
+      serviceAccountName: {{ include "laravel.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ $release_name }}-php-fpm
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: php-fpm
+              containerPort: 9000
+              protocol: TCP
+          env:
+            - name: RELEASE_HASH
+              value: "{{.Values.release_hash }}"
+            - name: APP_LOG_LEVEL
+              value: "error"
+            - name: "REDIS_HOST"
+              value: "127.0.0.1"
+            - name: "REDIS_PORT"
+              value: "6379"
+            - name: "REDIS_CLIENT"
+              value: "phpredis"
+            - name: BROADCAST_DRIVER
+              value: "redis"
+            - name: QUEUE_CONNECTION
+              value: "redis"
+            - name: SESSION_DRIVER
+              value: "redis"
+            - name: CACHE_DRIVER
+              value: "redis"
+            - name: SESSION_DOMAIN
+              value: ""
+            {{- with .Values.mysql.auth }}
+            - name: "DB_CONNECTION"
+              value: "mysql"
+            - name: "DB_DATABASE"
+              value: {{ .database  }}
+            - name: "DB_HOST"
+              value: {{ $release_name }}-mysql
+            - name: "DB_PORT"
+              value: "3306"
+            - name: "DB_USERNAME"
+              value: "root"
+            - name: "DB_PASSWORD"
+              value: {{ .rootPassword  }}
+            {{- end }}
+            {{- toYaml .Values.env | nindent 12 }}
+          command: ["/bin/sh"]
+          args: ["-c", "/usr/local/bin/start-container-prod.sh"]
+          volumeMounts:
+            - name: public-volume
+              mountPath:  /var/www/html/public
+            {{- if .Values.storage.enabled }}
+            - name: storage-volume
+              mountPath: /var/www/html/core/storage
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        - name: {{ $release_name }}-nginx
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+              - name: nginx-config-volume
+                mountPath: /etc/nginx/conf.d
+              - name: public-volume
+                mountPath: /var/www/html/public
+              {{- if .Values.storage.enabled }}
+              - name: storage-volume
+                mountPath: /var/www/html/core/storage
+              {{- end }}
+        - name: {{ $release_name }}-redis
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: redis:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 6379
+              protocol: TCP
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

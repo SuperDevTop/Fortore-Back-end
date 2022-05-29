@@ -1,0 +1,10 @@
+deploy-release:
+  stage: deploy
+  image: devth/helm:latest
+  script:
+    - helm plugin install https://github.com/chartmuseum/helm-push.git
+    - helm repo add --username gitlab-ci-token --password $CI_JOB_TOKEN laravel-chart ${CI_API_V4_URL}/projects/28915459/packages/helm/stable
+    - helm repo update
+    - helm lint "$CI_PROJECT_DIR"
+    - helm push "$CI_PROJECT_DIR" laravel-chart
+

@@ -1,0 +1,42 @@
+version: "3.7"
+services:
+  investment-app:
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    image: investment-app
+    container_name: investment-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8082:8080"
+    environment:
+      APP_KEY: "base64:znMhZpMqp5xcs29c+68FUhAKeo38rDdUN9BVuWWdayE="
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: app
+      DB_PORT: 3306
+      APP_ENV: "local"
+      DB_DATABASE: app
+      DB_USERNAME: app
+      DB_PASSWORD: app
+    networks:
+      - investment-app
+  mysql:
+    image: docker.io/bitnami/mysql:8.0.22-debian-10-r23
+    container_name: app
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: app
+      MYSQL_ROOT_PASSWORD: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    networks:
+      - investment-app
+    volumes:
+      - "./../data:/var/lib/mysql"
+networks:
+  investment-app:
+    driver: bridge

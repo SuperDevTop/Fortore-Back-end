@@ -1,0 +1,191 @@
+* {
+    margin: 0;
+    padding: 0;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    font-family: "Dubai";
+}
+
+@page {
+    /*size: 9in 1in; !* <length>{1,2} | auto | portrait | landscape *!*/
+    /*!* 'em' 'ex' and % are not allowed; length values are width height *!*/
+    /*margin: 10%; !* <any of the usual CSS values for margins> *!*/
+    /*!*(% of page-box width for LR, of height for TB) *!*/
+    /*margin-header: 5mm; !* <any of the usual CSS values for margins> *!*/
+    margin-footer: 10%;
+    /* <any of the usual CSS values for margins> */
+    margin-header: 10%;
+    margin-top: 10%;
+    margin-bottom: 15%;
+    /*marks: cross;!*crop | cross | none*!*/
+    /*header: html_myHTMLHeaderOdd;*/
+    footer: html_footer;
+    /*background: ...*/
+    /*background-image: ...*/
+    /*background-position: ;*/
+    background-repeat: no-repeat;
+    background-image: url("../../../../images/contract/image/contract-sized-background3.png");
+}
+
+
+@font-face {
+    src: url("../font/ArbFONTS-Dubai-Regular.otf");
+    font-family: "Dubai";
+}
+
+body {
+    /* border: 10px solid #000; */
+    margin: 2px;
+    -webkit-print-color-adjust: exact;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    height: auto;
+
+    font-family: "Dubai";
+    font-size: 18px;
+}
+
+.contract {
+    position: relative;
+}
+
+.container {
+    padding: 0 10px;
+}
+
+
+.title {
+    text-align: center;
+    margin: 15px 0;
+}
+
+.title h4 {
+    font-weight: 600;
+}
+
+.signature {
+    position: relative;
+}
+
+.signature .signatureImage {
+    position: absolute;
+    content: "";
+    bottom: 15%;
+    left: 0;
+    height: 100px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    width: 200px;
+    z-index: -1;
+}
+
+.preamble .red {
+    color: red;
+}
+
+.band {
+    text-align: right;
+}
+
+.band span {
+    text-align: right;
+    border-bottom: 3px solid #000;
+    display: block;
+    width: -webkit-max-content;
+    width: -moz-max-content;
+    width: max-content;
+}
+
+.signatureHand {
+    position: relative;
+    margin-top: 20px;
+}
+
+.signatureHandContent {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-pack: distribute;
+    justify-content: space-around;
+}
+
+.signatureHand .imageHand {
+    width: 200px;
+    height: 100px;
+}
+
+.signatureHand .imageHand img {
+    width: 100%;
+    height: inherit;
+}
+
+.signatureHandContent .textSignature {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+}
+
+
+.signatureImage img {
+    width: 100%;
+    height: inherit;
+}
+
+
+@media (max-width: 991px) {
+    body {
+        margin: 0;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+
+
+}
+
+
+@media print {
+
+    /* #wrapper {
+      position: fixed;
+      overflow: auto;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      border: 5px solid #000;
+    } */
+    body {
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .container {
+        padding: 0 10px;
+    }
+
+    .signature .signatureImage {
+        position: fixed;
+        bottom: 15%;
+        left: 0;
+        z-index: -1;
+    }
+
+}

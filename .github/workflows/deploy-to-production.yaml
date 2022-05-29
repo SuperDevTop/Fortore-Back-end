@@ -1,0 +1,28 @@
+name: deploy-to-production
+on: ["push"]
+jobs:
+  install-and-setup-composer-packages:
+    name: "Install & Setup Composer Packages"
+    runs-on: ubuntu-latest
+    steps:
+      -   name: Checkout Repository
+          uses: actions/checkout@master
+      -   name: Setup Enviroment
+          uses: shivammathur/setup-php@v2
+          with:
+              php-version: '7.4.0'
+              extensions: none,phar,iconv,mbstring,gd,pdo_mysql,intl,xml,zip,pcntl,bz2,opcache,bcmath,ctype,exif
+      -   name: install missing packages 
+          run: apt-get install php7.4-mbstring -y
+      -   name: Speed up the packages installation process
+          run: cd core && composer install
+      # - uses: "actions/upload-artifacts@v2"
+        # with: 
+          # name: "upload-node"
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Build the Docker image
+  #     run: docker build . --file Dockerfile.Prod --tag ghcr.io/mhadiahmed/fortore_investment:$(date +%s)
+    

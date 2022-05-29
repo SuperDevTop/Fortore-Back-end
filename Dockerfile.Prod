@@ -1,0 +1,49 @@
+FROM php:7.4-fpm
+apt-get update -y && apt-get install -y openssl zip unzip git
+apt-get install -yqq curl
+curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+apt-get install -yqq libpq-dev libcurl4-gnutls-dev libicu-dev zlib1g-dev libpng-dev libxml2-dev libzip-dev libbz2-dev
+apt install -y php7.4-pdo_mysql
+apt install -y php7.4-curl
+apt install -y php7.4-json
+apt install -y php7.4-intl
+apt install -y php7.4-gd
+apt install -y php7.4-xml
+apt install -y php7.4-zip
+apt install -y php7.4-bz2 php7.4-opcache php7.4-bcmath php7.4-ctype
+apt install -y php7.4-pcntl
+curl -sL https://deb.nodesource.com/setup_12.x | bash -
+apt-get install -yqq nodejs
+apt install -yqq  supervisor
+apt install -yqq nano
+pecl install -o -f redis &&  docker-php-ext-enable redis
+apt-get update && apt-get -y install cron
+docker-php-ext-install  exif
+apt-get update && apt-get install -y libpng-dev
+apt-get install -y \
+    libwebp-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev libxpm-dev \
+    libfreetype6-dev
+docker-php-ext-install calendar
+WORKDIR /var/www/html
+COPY . .
+RUN cd /var/www/html/core && composer install --prefer-dist --no-dev --no-scripts
+RUN cd /var/www/html/core && cp .env.example .env
+# RUN echo 'npm install'
+RUN cd /var/www/html/core && npm install
+# RUN echo 'npm run dev'
+# RUN cd /var/www/html/core && npm run prod
+# COPY  /init-prod.sh
+COPY ./scripts/start-container-prod.sh /usr/local/bin/
+# ENTRYPOINT ["/init-prod.sh"]
+COPY ./scripts/php.ini /usr/local/etc/php/conf.d/memory-limit-php.ini
+RUN chmod +x /usr/local/bin/start-container-prod.sh
+RUN ln -s /usr/local/bin/start-container-prod.sh /
+COPY ./scripts/cron-prod /etc/cron.d/cron-prod
+COPY ./scripts/supervisor-prod.conf /etc/supervisor/conf.d/supervisord.conf
+RUN chmod 0644 /etc/cron.d/cron-prod
+RUN crontab /etc/cron.d/cron-prod
+ENTRYPOINT ["start-container-prod.sh"]
+CMD ["php-fpm"]
+EXPOSE 9000

@@ -1,0 +1,6 @@
+{
+    "require": {
+        "laravel/horizon": "^5.7",
+        "sentry/sentry-laravel": "^2.11"
+    }
+}
